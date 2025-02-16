@@ -26,7 +26,7 @@ def connect_to_google_sheets():
         scopes=SCOPES
     )
     
-    # Store service account email for later use
+    # Save service account email for later use
     global SERVICE_ACCOUNT_EMAIL
     SERVICE_ACCOUNT_EMAIL = credentials.service_account_email
     
@@ -46,23 +46,29 @@ def fetch_job_page(url):
 # Parse job information using Google Gemini
 def extract_job_info(html, job_url):
     prompt = f"""
-    This is the HTML content of a job posting page. Please parse the following information:
+    Please analyze this job posting HTML content and extract the following information:
     - Company name
     - Job title
     - Company location
     - Job URL
-    - Country (extract the country name from the location info, e.g., if location is "Munich, Germany" return "Germany")
+    - Country (extract the country name from the location, e.g., if location is "Munich, Germany" return "Germany")
+    - Key takeaways (extract 3-5 important job responsibilities or requirements from the job description, listed concisely)
 
-    Please respond directly in JSON format without any markdown formatting:
+    Please respond in JSON format without any markdown formatting:
     {{
         "company_name": "...",
         "job_title": "...",
         "location": "...",
         "job_url": "{job_url}",
-        "country": "..."
+        "country": "...",
+        "key_takeaways": [
+            "takeaway 1",
+            "takeaway 2",
+            "takeaway 3"
+        ]
     }}
 
-    Here is the HTML content:
+    Here's the HTML content:
     {html[:3000]}
     """
 
@@ -76,7 +82,7 @@ def extract_job_info(html, job_url):
         # Clean response text
         cleaned_response = response.text.strip()
         
-        # Remove all possible markdown formatting
+        # Remove any possible markdown formatting
         if "```" in cleaned_response:
             start = cleaned_response.find("{")
             end = cleaned_response.rfind("}") + 1
@@ -138,13 +144,22 @@ def append_to_sheet(job_info, column_mapping, date_column, spreadsheet_id):
         
         # Update column I (job title)
         sheet.update_cell(last_row, 9, job_info.get('job_title', ''))  # I is column 9
+        
+        # Update column D (key takeaways)
+        key_takeaways = job_info.get('key_takeaways', [])
+        # Add numbers to each takeaway
+        numbered_takeaways = [f"{i+1}. {takeaway}" for i, takeaway in enumerate(key_takeaways)] if key_takeaways else []
+        takeaways_text = '\n'.join(numbered_takeaways) if numbered_takeaways else ''
+        sheet.update_cell(last_row, 4, takeaways_text)  # D is column 4
 
         # Output location and country information when updating fields
         print(f"- Location: {job_info.get('location', '')}")
         print(f"- Country: {job_info.get('country', '')}")
+        print(f"- Key Takeaways: {takeaways_text}")
 
         print(f"✅ Successfully added data to row {last_row}")
         print(f"Added data:")
+        print(f"- Key Takeaways (D{last_row}): {takeaways_text}")
         print(f"- Date (E{last_row}): {current_date}")
         print(f"- Company Name (F{last_row}): {job_info.get('company_name', '')}")
         print(f"- Job Link (H{last_row}): {job_info.get('job_url', '')}")
@@ -193,7 +208,8 @@ if __name__ == "__main__":
         "company_name": "F",
         "job_title": "I",
         "job_url": "H",
-        "country": "G"
+        "key_takeaways": "D",
+        # "country": "G"
     }
     date_column = "E"
     
