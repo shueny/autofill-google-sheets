@@ -124,33 +124,37 @@ def append_to_sheet(job_info, column_mapping, date_column, spreadsheet_id):
         sheet = client.open_by_key(spreadsheet_id).sheet1
         print(f"✅ Successfully connected to spreadsheet")
 
-        # Get all values from column H (job link)
-        job_links = sheet.col_values(8)  # H is column 8
-        last_row = len(job_links) + 1  # Find the next row after the last entry
+        # Get all values from job_url column
+        job_url_col = column_letter_to_index(column_mapping['job_url'])
+        job_links = sheet.col_values(job_url_col)
+        last_row = len(job_links) + 1
         print(f"Found last entry at row {len(job_links)}, will add to row {last_row}")
 
         # Use new date format YYYY/MM/DD
         current_date = datetime.now().strftime("%Y/%m/%d")
         
-        # Update each column separately
-        # Update column E (date)
-        sheet.update_cell(last_row, 5, current_date)  # E is column 5
+        # Update date column
+        date_col = column_letter_to_index(date_column)
+        sheet.update_cell(last_row, date_col, current_date)
         
-        # Update column F (company name)
-        sheet.update_cell(last_row, 6, job_info.get('company_name', ''))  # F is column 6
+        # Update company name
+        company_col = column_letter_to_index(column_mapping['company_name'])
+        sheet.update_cell(last_row, company_col, job_info.get('company_name', ''))
         
-        # Update column H (job link)
-        sheet.update_cell(last_row, 8, job_info.get('job_url', ''))  # H is column 8
+        # Update job link
+        job_url_col = column_letter_to_index(column_mapping['job_url'])
+        sheet.update_cell(last_row, job_url_col, job_info.get('job_url', ''))
         
-        # Update column I (job title)
-        sheet.update_cell(last_row, 9, job_info.get('job_title', ''))  # I is column 9
+        # Update job title
+        job_title_col = column_letter_to_index(column_mapping['job_title'])
+        sheet.update_cell(last_row, job_title_col, job_info.get('job_title', ''))
         
-        # Update column D (key takeaways)
+        # Update key takeaways
         key_takeaways = job_info.get('key_takeaways', [])
-        # Add numbers to each takeaway
         numbered_takeaways = [f"{i+1}. {takeaway}" for i, takeaway in enumerate(key_takeaways)] if key_takeaways else []
         takeaways_text = '\n'.join(numbered_takeaways) if numbered_takeaways else ''
-        sheet.update_cell(last_row, 4, takeaways_text)  # D is column 4
+        takeaways_col = column_letter_to_index(column_mapping['key_takeaways'])
+        sheet.update_cell(last_row, takeaways_col, takeaways_text)
 
         # Output location and country information when updating fields
         print(f"- Location: {job_info.get('location', '')}")
@@ -159,11 +163,11 @@ def append_to_sheet(job_info, column_mapping, date_column, spreadsheet_id):
 
         print(f"✅ Successfully added data to row {last_row}")
         print(f"Added data:")
-        print(f"- Key Takeaways (D{last_row}): {takeaways_text}")
-        print(f"- Date (E{last_row}): {current_date}")
-        print(f"- Company Name (F{last_row}): {job_info.get('company_name', '')}")
-        print(f"- Job Link (H{last_row}): {job_info.get('job_url', '')}")
-        print(f"- Job Title (I{last_row}): {job_info.get('job_title', '')}")
+        print(f"- Key Takeaways ({column_mapping['key_takeaways']}{last_row}): {takeaways_text}")
+        print(f"- Date ({date_column}{last_row}): {current_date}")
+        print(f"- Company Name ({column_mapping['company_name']}{last_row}): {job_info.get('company_name', '')}")
+        print(f"- Job Link ({column_mapping['job_url']}{last_row}): {job_info.get('job_url', '')}")
+        print(f"- Job Title ({column_mapping['job_title']}{last_row}): {job_info.get('job_title', '')}")
 
     except Exception as e:
         print(f"❌ Error occurred: {str(e)}")
