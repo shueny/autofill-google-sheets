@@ -148,13 +148,25 @@ def append_to_sheet(job_info, column_mapping, date_column, spreadsheet_id):
         # Update job title
         job_title_col = column_letter_to_index(column_mapping['job_title'])
         sheet.update_cell(last_row, job_title_col, job_info.get('job_title', ''))
+
+        # Update job location
+        if 'location' in column_mapping:
+            location_col = column_letter_to_index(column_mapping['location'])
+            sheet.update_cell(last_row, location_col, job_info.get('location', ''))
+
+        # Update job country
+        if 'country' in column_mapping:
+            country_col = column_letter_to_index(column_mapping['country'])
+            sheet.update_cell(last_row, country_col, job_info.get('country', ''))
         
         # Update key takeaways
-        key_takeaways = job_info.get('key_takeaways', [])
-        numbered_takeaways = [f"{i+1}. {takeaway}" for i, takeaway in enumerate(key_takeaways)] if key_takeaways else []
-        takeaways_text = '\n'.join(numbered_takeaways) if numbered_takeaways else ''
-        takeaways_col = column_letter_to_index(column_mapping['key_takeaways'])
-        sheet.update_cell(last_row, takeaways_col, takeaways_text)
+        if 'key_takeaways' in column_mapping:
+            key_takeaways = job_info.get('key_takeaways', [])
+            # Add numbers to each takeaway
+            numbered_takeaways = [f"{i+1}. {takeaway}" for i, takeaway in enumerate(key_takeaways)] if key_takeaways else []
+            takeaways_text = '\n'.join(numbered_takeaways) if numbered_takeaways else ''
+            key_takeaways_col = column_letter_to_index(column_mapping['key_takeaways'])
+            sheet.update_cell(last_row, key_takeaways_col, takeaways_text)
 
         # Output location and country information when updating fields
         print(f"- Location: {job_info.get('location', '')}")
@@ -213,7 +225,8 @@ if __name__ == "__main__":
         "job_title": "I",
         "job_url": "H",
         "key_takeaways": "D",
-        # "country": "G"
+        "location": "G",
+        "country": "J"
     }
     date_column = "E"
     
