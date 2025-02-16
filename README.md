@@ -1,13 +1,33 @@
-# Job Posting Auto-fill to Google Sheets
+# Job Posting Auto-fill for Google Sheets
 
-This project automatically extracts job posting information from web pages and fills it into a specified Google Sheets document.
+A Python script that automatically extracts job posting information and fills it into a Google Sheets document.
 
 ## Features
 
-- Automatic job posting webpage content extraction
-- Uses Google Gemini AI to parse job information
-- Automatic filling of specified Google Sheets fields
-- Supports multiple job information fields (company name, job title, location, etc.)
+- Extracts job information from any job posting URL
+- Automatically identifies:
+  - Company name
+  - Job title
+  - Location
+  - Key job responsibilities/requirements
+- Fills information into specified Google Sheets columns
+- Adds timestamp for each entry
+
+## Prerequisites
+
+- Python 3.7 or higher
+- Google Cloud Project with enabled APIs:
+  - Google Sheets API
+  - Google Drive API
+- Google Gemini API key
+- Google Service Account credentials
+
+## Setup
+
+1. Clone the repository:
+
+````bash
+git clone [
 
 ## Tech Stack
 
@@ -32,27 +52,7 @@ This project automatically extracts job posting information from web pages and f
 2. Required Python packages:
    ```bash
    pip install google-generativeai requests gspread google-auth python-dotenv
-   ```
-
-## Setup
-
-1. Copy `.env.example` to `.env`:
-
-   ```bash
-   cp .env.example .env
-   ```
-
-2. Set required environment variables in `.env`:
-
-   - `GEMINI_API_KEY`: Google Gemini API key
-   - `GOOGLE_CREDENTIALS_FILE`: Path to Google Service Account credentials file
-   - `SPREADSHEET_ID`: Your Google Sheets document ID
-
-3. Set up Google Sheets API:
-   - Create a project in Google Cloud Console
-   - Enable Google Sheets API and Google Drive API
-   - Create a service account and download credentials file
-   - Add the service account email to your Google Sheets sharing list
+````
 
 ## Usage
 
