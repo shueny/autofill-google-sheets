@@ -49,10 +49,16 @@ git clone [
 ## Requirements
 
 1. Python 3.7+
-2. Required Python packages:
+2. Install required packages:
    ```bash
-   pip install google-generativeai requests gspread google-auth python-dotenv
+   pip install -r requirements.txt
 ````
+
+Or install packages individually:
+
+```bash
+pip install google-generativeai requests gspread google-auth python-dotenv
+```
 
 ## Usage
 
