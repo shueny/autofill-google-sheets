@@ -27,7 +27,8 @@ A Python script that automatically extracts job posting information and fills it
 1. Clone the repository:
 
 ````bash
-git clone [
+git clone https://github.com/shueny/autofill-google-sheets.git
+````
 
 ## Tech Stack
 
