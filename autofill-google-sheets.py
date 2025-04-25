@@ -72,7 +72,7 @@ def extract_job_info(html, job_url):
     {html[:3000]}
     """
 
-    model = genai.GenerativeModel("gemini-pro")
+    model = genai.GenerativeModel("gemini-2.0-flash")
     response = model.generate_content(prompt)
     
     try:
@@ -121,7 +121,9 @@ def append_to_sheet(job_info, column_mapping, date_column, spreadsheet_id):
     try:
         print(f"Attempting to connect to spreadsheet...")
         print(f"Using Spreadsheet ID: {spreadsheet_id}")
-        sheet = client.open_by_key(spreadsheet_id).sheet1
+        
+        # 指定 'Jobs' 分頁
+        sheet = client.open_by_key(spreadsheet_id).worksheet('Jobs')  # 修改這行，從 sheet1 改為指定 'Jobs'
         print(f"✅ Successfully connected to spreadsheet")
 
         # Get all values from job_url column
