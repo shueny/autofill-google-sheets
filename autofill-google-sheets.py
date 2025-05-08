@@ -152,6 +152,29 @@ def extract_job_info(html, job_url):
         # 添加 job_url 到結果中
         result['job_url'] = job_url
         
+        # 條列式 job_requirements
+        requirements = result.get('job_requirements', '')
+        bullet_prompt = f"""
+        Please convert the following job requirements into a bullet-point list (each requirement as a separate line, no markdown, just plain text):\n\n{requirements}
+        """
+        bullet_response = model.generate_content(bullet_prompt)
+        bullet_text = bullet_response.text.strip()
+        # 移除 markdown 格式
+        if "```" in bullet_text:
+            start = bullet_text.find("-")
+            bullet_text = bullet_text[start:] if start != -1 else bullet_text
+        # 將 markdown 的 - 或 * 換成換行
+        bullet_lines = []
+        for line in bullet_text.splitlines():
+            line = line.strip()
+            if line.startswith('-') or line.startswith('*'):
+                line = line[1:].strip()
+            if line:
+                bullet_lines.append(line)
+        # 加上數字編號
+        numbered_bullets = [f"{i+1}. {item}" for i, item in enumerate(bullet_lines)]
+        result['job_requirements_bullet'] = '\n'.join(numbered_bullets)
+
         # Summarize job_description and job_requirements using Gemini
         summary_prompt = f"""
         Summarize the following job description in 3-5 concise bullet points:\n\n{result.get('job_description', '')}
@@ -164,7 +187,7 @@ def extract_job_info(html, job_url):
         result['job_description_summary'] = summary
 
         req_summary_prompt = f"""
-        Summarize the following job requirements in 3-5 concise bullet points:\n\n{result.get('job_requirements', '')}
+        Summarize the following job requirements in 3-5 concise bullet points:\n\n{result.get('job_requirements_bullet', '')}
         """
         req_summary_response = model.generate_content(req_summary_prompt)
         req_summary = req_summary_response.text.strip()
@@ -281,10 +304,11 @@ def append_to_sheet(job_info, column_mapping, date_column, spreadsheet_id):
             desc_col = column_letter_to_index(column_mapping['job_description'])
             truncated_desc = truncate_text(job_info.get('job_description', ''))
             sheet.update_cell(last_row, desc_col, truncated_desc)
-        # Update job requirements with truncation
+        # Update job requirements with bullet points
         if 'job_requirements' in column_mapping:
             req_col = column_letter_to_index(column_mapping['job_requirements'])
-            truncated_reqs = truncate_text(job_info.get('job_requirements', ''))
+            bullet_reqs = job_info.get('job_requirements_bullet', job_info.get('job_requirements', ''))
+            truncated_reqs = truncate_text(bullet_reqs)
             sheet.update_cell(last_row, req_col, truncated_reqs)
         # Update job description summary
         if 'job_description_summary' in column_mapping:
@@ -354,18 +378,18 @@ if __name__ == "__main__":
         sys.exit(1)
     
     column_mapping = {
-        "company_name": "F",
-        "job_title": "I",
-        "job_url": "H",
-        "key_takeaways": "K",
-        "location": "G",
-        "job_description": "L",
-        "job_requirements": "M",
+        "company_name": "E",
+        "job_title": "H",
+        "job_url": "G",
+        "key_takeaways": "J",
+        "location": "F",
+        # "job_description": "L",
+        "job_requirements": "L",
         # "job_description_summary": "N",
         # "job_requirements_summary": "O",
         # "screenshot": "P"
     }
-    date_column = "E"
+    date_column = "D"
     
     # 執行非同步主程式
     asyncio.run(process_job_link(job_url, column_mapping, date_column, spreadsheet_id))
